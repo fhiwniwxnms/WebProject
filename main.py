@@ -9,7 +9,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-bot = telebot.TeleBot('7280605209:AAH6JW03UpB9qjUf9FRhwwLxlqVTIY7_uGg')
+bot = telebot.TeleBot('.')
 
 @bot.message_handler(commands=['start'])
 def start(message):
