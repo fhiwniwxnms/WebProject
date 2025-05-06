@@ -1,17 +1,14 @@
-import asyncio
-
 from aiogram import Router, F
-from aiogram.filters import CommandStart, Command
+from aiogram.filters import CommandStart
 from aiogram.types import Message, CallbackQuery
-from aiogram.utils.chat_action import ChatActionSender
 from faker import Faker
 
 from create_bot import bot
 from db_work.db_commands import *
-from keyboards.all_kb import main_kb, create_spec_kb, create_rat
-from keyboards.inline_kbs import register_kb, get_to_main_menu, main_menu_kb
+from keyboards.inline_kbs import *
 
 start_router = Router()
+reg_users = [user_username for user_username in config('REG_USERS').split(',')]
 
 questions = {
     1: {'qst': 'Столица Италии?', 'answer': 'Рим'},
@@ -25,6 +22,17 @@ questions = {
     9: {'qst': 'Что такое H2O?', 'answer': 'Вода'},
     10: {'qst': 'Какой океан самый большой?', 'answer': 'Тихий океан'},
 }
+
+type_eat = {
+    0: 'Ничего',
+    1: 'Столица Италии?',
+    2: 'Сколько континентов на Земле?',
+    3: 'Самая длинная река в мире?',
+    4: 'Какой элемент обозначается символом "O"?',
+    5: 'Как зовут главного героя книги "Гарри Поттер"?',
+    6: 'Сколько цветов в радуге?'
+}
+
 
 # @start_router.message(CommandStart())
 # async def cmd_start(message: Message):
@@ -71,42 +79,66 @@ questions = {
 #         await call.message.answer(msg_text, reply_markup=create_qst_inline_kb(questions))
 
 
-
-
 @start_router.message(CommandStart())
 async def cmd_start(message: Message):
-    create_db()
-    await message.answer('🍏Привет, друг!\n\n'
-                         'Ты попал в <b>«ЛанчБот🥞»</b> – твоего помощника в школьном питании!\n\n'
-                         '📅<b>Выбирай завтрак, обед или полдник</b> – и всё само запишется.\n'
-                         '📋<b>Смотри свои заказы</b> в любое время.\n'
-                         '⏰<b>Успевай отменить</b>, если передумал!\n\n'
-                         '📝<b>Давай зарегистрируемся?</b> Это быстро!\n'
-                         '👉Жми <b>«Регистрация»</b> и начинай пользоваться!\n\n'
-                         '❓ <b>Есть вопросы?</b> Напиши /help, и я помогу!\n', reply_markup=register_kb())
+    if message.from_user.username not in reg_users:
+        await message.answer('🍏Привет, друг!\n\n'
+                             'Ты попал в <b>«ЛанчБот🥞»</b> – твоего помощника в школьном питании!\n\n'
+                             '📅<b>Выбирай завтрак, обед или полдник</b> – и всё само запишется.\n'
+                             '📋<b>Смотри свои заказы</b> в любое время.\n'
+                             '⏰<b>Успевай отменить</b>, если передумал!\n\n'
+                             '📝<b>Давай зарегистрируемся?</b> Это быстро!\n'
+                             '👉Жми <b>«Регистрация»</b> и начинай пользоваться!\n\n'
+                             '❓ <b>Есть вопросы?</b> Напиши /help, и я помогу!\n', reply_markup=register_kb())
+    else:
+        await message.answer('👋🏻 <b>Добро пожаловать в чат-бот по заказу школьной еды!</b>\n\n'
+                             '🧃 <b>Хочешь заказать завтрак или обед?</b> Нажимай "Сделать заказ" и выбирай!\n'
+                             '📋 <b>Смотри свои заказы</b> в любое время.\n'
+                             '⏰ <b>Успевай отменить</b>, если передумал!\n'
+                             '🍝 <b>Не знаешь, что сегодня подают в столовой?</b> Взгляни на меню!\n\n'
+                             '❓ <b>Есть вопросы?</b> Напиши /help, и я помогу!\n'
+                             '🍕 <i>Пусть в столовой всегда будет вкусно!</i>',
+                             reply_markup=main_menu_kb(message.from_user.username))
+
 
 @start_router.callback_query(F.data == 'reg')
 async def get_user_info(call: CallbackQuery):
     await bot.send_message(call.message.chat.id, 'Назови, пожалуйста, свои ФИО. Хотим познакомиться 👐\n'
                                                  'Затем введи свой класс с литерой класса через пробел.\n'
-                                                 f'Пример: "{Faker('ru_RU').name()} 11 А"')
+                                                 f'Пример: "{Faker("ru_RU").name()} 11 А"')
+
 
 @start_router.message(F.text)
 async def next_step(message: Message):
     info = message.text.strip().split()
     username, name, grade, liter = message.from_user.username, f'{info[0]} {info[1]} {info[2]}', info[3], info[4]
     print(username, name, grade, liter)
-    insert_info(username, name, grade, liter)
+    insert_info_users(username, name, grade, liter)
     await message.answer('Отлично! Погнали дальше?😉', reply_markup=get_to_main_menu())
+
 
 @start_router.callback_query(F.data == 'back_home')
 async def main_menu(call: CallbackQuery):
     await call.message.answer('👋🏻 <b>Добро пожаловать в чат-бот по заказу школьной еды!</b>\n\n'
-                            '🧃 <b>Хочешь заказать завтрак или обед?</b> Нажимай "Сделать заказ" и выбирай!\n'
-                            '📋 <b>Смотри свои заказы</b> в любое время.\n' 
-                            '⏰ <b>Успевай отменить</b>, если передумал!\n'
-                            '🍝 <b>Не знаешь, что сегодня подают в столовой?</b> Взгляни на меню!\n\n'
-                            '❓ <b>Есть вопросы?</b> Напиши /help, и я помогу!\n'
-                            '🍕 <i>Пусть в столовой всегда будет вкусно!</i>',
+                              '🧃 <b>Хочешь заказать завтрак или обед?</b> Нажимай "Сделать заказ" и выбирай!\n'
+                              '📋 <b>Смотри свои заказы</b> в любое время.\n'
+                              '⏰ <b>Успевай отменить</b>, если передумал!\n'
+                              '🍝 <b>Не знаешь, что сегодня подают в столовой?</b> Взгляни на меню!\n\n'
+                              '❓ <b>Есть вопросы?</b> Напиши /help, и я помогу!\n'
+                              '🍕 <i>Пусть в столовой всегда будет вкусно!</i>',
                               reply_markup=main_menu_kb(call.from_user.username))
     await call.answer('Переходим в главное меню 💤', show_alert=False)
+
+
+@start_router.callback_query(F.data == 'make_order')
+async def make_order_qst(call: CallbackQuery):
+    await call.message.answer('Какой у тебя заказ? 💁🏻‍♀️', reply_markup=order_variants())
+    await call.answer()
+
+
+@start_router.callback_query(F.data.startswith('ord_'))
+async def make_order(call: CallbackQuery):
+    ords = int(F.data[4:])
+    insert_info_orders(call.from_user.username, ords)
+    await call.message.answer('Отлично! Куда дальше? 👀', reply_markup=cancel_or_get_to_main_menu())
+    await call.answer()

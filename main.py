@@ -15,12 +15,14 @@ pupil = types.InlineKeyboardButton(text='Ученик', callback_data='pupil')
 teacher = types.InlineKeyboardButton(text='Учитель', callback_data='teacher')
 status_buttons.add(pupil, teacher)
 
+
 @dp.message(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
     conn = sqlite3.connect('list_of_students.sql')
     cur = conn.cursor()
     cur.execute(
-        'CREATE TABLE IF NOT EXISTS users(id int auto_increment primary key, status int, name varchar(100), class varchar(3))')
+        'CREATE TABLE IF NOT EXISTS users(id int auto_increment primary key, username varchar(100), name varchar(100), '
+        'class varchar(3))')
     conn.commit()
     await message.answer("🍏Привет, друг!\n"
                          "Ты попал в *«ЛанчБот🥞»* – твоего помощника в школьном питании!\n"
@@ -39,10 +41,10 @@ async def send_welcome(message: types.Message):
 async def registration(callback_query: types.CallbackQuery):
     await callback_query.message.answer('Вы учитель или ученик?', reply_markup=status_buttons)
 
+
 @dp.callback_query(F.text.contains('pupil', 'teacher'))
 async def status_giving(callback_query: types.CallbackQuery):
     await callback_query.answer('Назови, пожалуйста, свои ФИО. Хотим познакомиться 👐')
-
 
 
 if __name__ == '__main__':
