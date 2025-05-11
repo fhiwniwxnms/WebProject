@@ -3,6 +3,7 @@ import asyncio
 from aiogram.types import BotCommand, BotCommandScopeDefault
 from data import db_session
 from create_bot import bot, dp
+from db_work.db_commands import insert_orders_types
 from handlers.start import start_router
 
 
@@ -17,6 +18,7 @@ async def set_commands():
 
 async def main():
     db_session.global_init("list_of_students.db")
+    insert_orders_types()
     # scheduler.add_job(send_time_msg, 'interval', seconds=10)
     # scheduler.start()
     dp.include_router(start_router)

@@ -1,38 +1,23 @@
+import os
+
 from aiogram import Router, F
 from aiogram.filters import CommandStart
-from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message, CallbackQuery, FSInputFile
 from faker import Faker
 
-from create_bot import bot
 from db_work.db_commands import *
 from keyboards.inline_kbs import *
 
+from sqlalchemy import create_engine, exists
+from sqlalchemy.orm import sessionmaker
+
 start_router = Router()
-reg_users = [user_username for user_username in config('REG_USERS').split(',')]
+# reg_users = [user_username for user_username in config('REG_USERS').split(',')]
 
-questions = {
-    1: {'qst': 'Столица Италии?', 'answer': 'Рим'},
-    2: {'qst': 'Сколько континентов на Земле?', 'answer': 'Семь'},
-    3: {'qst': 'Самая длинная река в мире?', 'answer': 'Нил'},
-    4: {'qst': 'Какой элемент обозначается символом "O"?', 'answer': 'Кислород'},
-    5: {'qst': 'Как зовут главного героя книги "Гарри Поттер"?', 'answer': 'Гарри Поттер'},
-    6: {'qst': 'Сколько цветов в радуге?', 'answer': 'Семь'},
-    7: {'qst': 'Какая планета третья от Солнца?', 'answer': 'Земля'},
-    8: {'qst': 'Кто написал "Войну и мир"?', 'answer': 'Лев Толстой'},
-    9: {'qst': 'Что такое H2O?', 'answer': 'Вода'},
-    10: {'qst': 'Какой океан самый большой?', 'answer': 'Тихий океан'},
-}
-
-type_eat = {
-    0: 'Ничего',
-    1: 'Столица Италии?',
-    2: 'Сколько континентов на Земле?',
-    3: 'Самая длинная река в мире?',
-    4: 'Какой элемент обозначается символом "O"?',
-    5: 'Как зовут главного героя книги "Гарри Поттер"?',
-    6: 'Сколько цветов в радуге?'
-}
-
+eng = create_engine('sqlite:///list_of_students.db')
+Session = sessionmaker(bind=eng)
+session = Session()
 
 # @start_router.message(CommandStart())
 # async def cmd_start(message: Message):
@@ -81,7 +66,7 @@ type_eat = {
 
 @start_router.message(CommandStart())
 async def cmd_start(message: Message):
-    if message.from_user.username not in reg_users:
+    if not session.query(exists().where(User.username == message.from_user.username)).scalar():
         await message.answer('🍏Привет, друг!\n\n'
                              'Ты попал в <b>«ЛанчБот🥞»</b> – твоего помощника в школьном питании!\n\n'
                              '📅<b>Выбирай завтрак, обед или полдник</b> – и всё само запишется.\n'
@@ -138,7 +123,14 @@ async def make_order_qst(call: CallbackQuery):
 
 @start_router.callback_query(F.data.startswith('ord_'))
 async def make_order(call: CallbackQuery):
-    ords = int(F.data[4:])
+    ords = int(call.data[4:])
     insert_info_orders(call.from_user.username, ords)
     await call.message.answer('Отлично! Куда дальше? 👀', reply_markup=cancel_or_get_to_main_menu())
+    await call.answer()
+
+@start_router.callback_query(F.data == 'current_menu')
+async def make_order_qst(call: CallbackQuery, state: FSMContext):
+    file = FSInputFile(path='all_media/menu.docx')
+    await call.message.answer_document(document=file, reply_markup=get_to_main_menu(),
+                                    caption='Лови файлик с меню! 💌')
     await call.answer()

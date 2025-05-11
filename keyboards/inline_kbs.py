@@ -30,9 +30,8 @@ def cancel_or_get_to_main_menu():
 
 def main_menu_kb(user_telegram_id: str):
     inline_kb_list = [
-        [InlineKeyboardButton(text="🥗 Сделать заказ", callback_data='make_order'),
-         InlineKeyboardButton(text="📝 Мой заказ", callback_data='my_order')],
-        [InlineKeyboardButton(text="👤 Профиль", callback_data='profile'),
+        [InlineKeyboardButton(text="🥗 Сделать заказ", callback_data='make_order')],
+        [InlineKeyboardButton(text="📝 Мой заказ", callback_data='my_order'),
          InlineKeyboardButton(text="🍽 Меню", callback_data='current_menu')]
     ]
     if user_telegram_id in admins:

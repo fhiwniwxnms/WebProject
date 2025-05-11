@@ -1,2 +1,1 @@
-from . import users
-from . import today_orders
+from . import create_tables
