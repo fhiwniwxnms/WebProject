@@ -5,7 +5,8 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from faker import Faker
-
+import datetime
+from create_bot import bot
 from db_work.db_commands import *
 from keyboards.inline_kbs import *
 
@@ -123,14 +124,39 @@ async def make_order_qst(call: CallbackQuery):
 
 @start_router.callback_query(F.data.startswith('ord_'))
 async def make_order(call: CallbackQuery):
+    cancel_order(call.from_user.username)
     ords = int(call.data[4:])
     insert_info_orders(call.from_user.username, ords)
     await call.message.answer('Отлично! Куда дальше? 👀', reply_markup=cancel_or_get_to_main_menu())
     await call.answer()
 
 @start_router.callback_query(F.data == 'current_menu')
-async def make_order_qst(call: CallbackQuery, state: FSMContext):
+async def menu_showing(call: CallbackQuery):
     file = FSInputFile(path='all_media/menu.docx')
     await call.message.answer_document(document=file, reply_markup=get_to_main_menu(),
                                     caption='Лови файлик с меню! 💌')
+    await call.answer()
+
+
+@start_router.callback_query(F.data == 'my_order')
+async def show_order(call: CallbackQuery):
+    date = datetime.now().strftime("%d.%m.%Y")
+    user_name = str(call.from_user.first_name)
+    if get_active_orders(call.from_user.username) != 'У вас нет активных заказов! 🍽':
+        order = str(get_active_orders(call.from_user.username)[0][1])
+    else:
+        order = str(get_active_orders(call.from_user.username))
+    print(date, user_name, order)
+    await call.message.answer(f'<i>Вот твой заказ на {date}, {user_name}!</i> 🤗\n\n'
+                              f'<code>{order}</code> \n\n'
+                              '🤔 <b>Хочешь отменить свой заказ, потому что не пойдешь в школу, или понял, не хочешь есть?</b> Жми кнопку "Отменить заказ"!\n\n'
+                              '🤳🏼 <b>Передумал насчёт своего заказа?</b> Снова сделай заказ, он изменится автоматически!',
+                              reply_markup=my_order())
+    await call.answer()
+
+
+@start_router.callback_query(F.data == 'delete_order')
+async def delete_order(call: CallbackQuery):
+    cancel_order(call.from_user.username)
+    await call.message.answer('Заказ удалён! Куда дальше? 👀', reply_markup=get_out_after_cancel())
     await call.answer()

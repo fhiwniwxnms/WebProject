@@ -1,10 +1,8 @@
-import sqlalchemy
+from datetime import datetime
 
 from data import db_session
-from data.db_session import SqlAlchemyBase
 from data.create_tables import User, Orders, Types
 from keyboards.all_kb import admins
-from datetime import datetime
 
 
 def insert_orders_types():
@@ -50,3 +48,25 @@ def insert_info_orders(user_telegram_id: str, ords=0):
     db_sess = db_session.create_session()
     db_sess.add(order)
     db_sess.commit()
+
+
+def cancel_order(user_telegram_id: str):
+    db_sess = db_session.create_session()
+    db_sess.query(Orders).filter(Orders.username == user_telegram_id).delete()
+    db_sess.commit()
+
+
+def get_active_orders(user_telegram_id: str):
+    db_sess = db_session.create_session()
+    orders = db_sess.query(
+        Orders,Types.order_type).filter(
+        Orders.username == user_telegram_id, Orders.order_id == Types.id
+    ).all()
+    if not orders:
+        return 'У вас нет активных заказов! 🍽'
+    return orders
+
+    # ord_type = db_sess.query(Orders).filter(Orders.username == user_telegram_id).all()
+    # if not ord_type:
+    #     return 'У вас нет активных заказов! 🍽'
+    # return db_sess.query(Types).filter(ord_type == Types.order_type).all()

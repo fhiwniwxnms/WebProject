@@ -51,6 +51,21 @@ def order_variants():
     ]
     return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
 
+def my_order():
+    inline_kb_list = [
+        [InlineKeyboardButton(text="❌ Отменить заказ", callback_data='delete_order'),
+         get_home]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
+
+def get_out_after_cancel():
+    inline_kb_list = [
+        [get_home,
+         InlineKeyboardButton(text="🥗 Сделать заказ", callback_data='make_order')]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=inline_kb_list)
+
+
 # def get_inline_kb():
 #     inline_kb_list = [
 #         [InlineKeyboardButton(text="Генерировать пользователя", callback_data='get_person')],
