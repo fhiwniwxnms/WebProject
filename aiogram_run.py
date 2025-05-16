@@ -17,7 +17,7 @@ async def set_commands():
     await bot.set_my_commands(commands, BotCommandScopeDefault())
 
 async def main():
-    db_session.global_init("data/list_of_students.db")
+    db_session.global_init("/data/list_of_students.db")
     insert_orders_types()
     dp.include_router(start_router)
     cleaner = TableCleaner(engine=create_engine('sqlite:///list_of_students.db'))
