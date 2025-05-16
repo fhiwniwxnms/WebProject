@@ -20,7 +20,7 @@ async def main():
     db_session.global_init("data/list_of_students.db")
     insert_orders_types()
     dp.include_router(start_router)
-    cleaner = TableCleaner(engine=create_engine('sqlite:///data/list_of_students.db'))
+    cleaner = TableCleaner(engine=create_engine('sqlite:///list_of_students.db'))
     cleaner.start()
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
