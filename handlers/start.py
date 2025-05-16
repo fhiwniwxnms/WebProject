@@ -1,4 +1,4 @@
-import datetime
+from datetime import timedelta
 
 from aiogram import Router, F
 from aiogram.filters import CommandStart
@@ -99,13 +99,17 @@ async def menu_showing(call: CallbackQuery):
 
 @start_router.callback_query(F.data == 'my_order')
 async def show_order(call: CallbackQuery):
-    date = datetime.now().strftime("%d.%m.%Y")
+    now = datetime.now()
+    if now.hour > 16:
+        date = now + timedelta(days=1)
+    else:
+        date = now
+    date = date.strftime("%d.%m.%Y")
     user_name = str(call.from_user.first_name)
     if get_active_orders(call.from_user.username) != 'У вас нет активных заказов! 🍽':
         order = str(get_active_orders(call.from_user.username)[0][1])
     else:
         order = str(get_active_orders(call.from_user.username))
-    print(date, user_name, order)
     await call.message.answer(f'<i>Вот твой заказ на {date}, {user_name}!</i> 🤗\n\n'
                               f'<code>{order}</code> \n\n'
                               '🤔 <b>Хочешь отменить свой заказ, потому что не пойдешь в школу, или понял, не хочешь есть?</b> Жми кнопку "Отменить заказ"!\n\n'
