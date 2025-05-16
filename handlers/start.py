@@ -13,7 +13,7 @@ from keyboards.inline_kbs import *
 
 start_router = Router()
 
-eng = create_engine('sqlite:///list_of_students.db')
+eng = create_engine('sqlite:///data/list_of_students.db')
 Session = sessionmaker(bind=eng)
 session = Session()
 
