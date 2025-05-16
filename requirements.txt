@@ -1,5 +1,4 @@
-asyncpg
-aiogram
-APScheduler
-python-decouple
-Faker
+aiogram==3.20.0.post0
+Faker==37.1.0
+SQLAlchemy==2.0.40
+schedule==1.2.2

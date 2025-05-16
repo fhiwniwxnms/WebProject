@@ -1,69 +1,27 @@
-import os
+import datetime
 
 from aiogram import Router, F
 from aiogram.filters import CommandStart
-from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from faker import Faker
-import datetime
+from sqlalchemy import create_engine, exists
+from sqlalchemy.orm import sessionmaker
+
 from create_bot import bot
 from db_work.db_commands import *
 from keyboards.inline_kbs import *
 
-from sqlalchemy import create_engine, exists
-from sqlalchemy.orm import sessionmaker
-
 start_router = Router()
-# reg_users = [user_username for user_username in config('REG_USERS').split(',')]
 
 eng = create_engine('sqlite:///list_of_students.db')
 Session = sessionmaker(bind=eng)
 session = Session()
 
-# @start_router.message(CommandStart())
-# async def cmd_start(message: Message):
-#     await message.answer('Запуск сообщения по команде /start используя фильтр CommandStart()',
-#                          reply_markup=main_kb(message.from_user.id))
-#
-# @start_router.message(Command('start_2'))
-# async def cmd_start(message: Message):
-#     await message.answer('Запуск сообщения по команде /start_2 используя фильтр Command()',
-#                          reply_markup=create_spec_kb())
-#
-# @start_router.message(F.text == '/start_3')
-# async def cmd_start(message: Message):
-#     await message.answer('Запуск сообщения по команде /start_3 используя магический фильтр F.text!',
-#                          reply_markup=create_rat())
-#
-# @start_router.message(F.text == 'Давай инлайн!')
-# async def get_inline_btn_link(message: Message):
-#     await message.answer('Вот тебе инлайн клавиатура со ссылками!', reply_markup=get_inline_kb())
-#
-# @start_router.callback_query(F.data == 'get_person')
-# async def send_random_person(call: CallbackQuery):
-#     # await call.answer('Генерирую случайного пользователя')
-#     user = Faker('ru_RU').name()
-#     await call.message.answer(user)
-#     await call.answer('Генерирую случайного пользователя', show_alert=False)
-#
-# @start_router.callback_query(F.data == 'back_home')
-# async def get_back_home(call: CallbackQuery):
-#     await call.message.answer('Обратно на главную',
-#                          reply_markup=main_kb(call.message.from_user.id))
-#     await call.answer('Возвращаю', show_alert=True)
-
-# @start_router.callback_query(F.data.startswith('qst_'))
-# async def cmd_start(call: CallbackQuery):
-#     await call.answer()
-#     qst_id = int(call.data.replace('qst_', ''))
-#     qst_data = questions[qst_id]
-#     msg_text = f'Ответ на вопрос {qst_data.get("qst")}\n\n' \
-#                f'<b>{qst_data.get("answer")}</b>\n\n' \
-#                f'Выбери другой вопрос:'
-#     async with ChatActionSender(bot=bot, chat_id=call.from_user.id, action="typing"):
-#         await asyncio.sleep(2)
-#         await call.message.answer(msg_text, reply_markup=create_qst_inline_kb(questions))
-
+@start_router.message(F.text == '/help')
+async def cmd_help(message: Message):
+    await message.answer('💬 <b>Нужна помощь? Мы на связи!</b>\n\n'
+                         'Если у тебя возникли вопросы или проблемы, пиши создателю ЛанчБота 👉 @by_gelya',
+                         reply_markup=get_to_main_menu())
 
 @start_router.message(CommandStart())
 async def cmd_start(message: Message):
@@ -133,9 +91,10 @@ async def make_order(call: CallbackQuery):
 @start_router.callback_query(F.data == 'current_menu')
 async def menu_showing(call: CallbackQuery):
     file = FSInputFile(path='all_media/menu.docx')
-    await call.message.answer_document(document=file, reply_markup=get_to_main_menu(),
-                                    caption='Лови файлик с меню! 💌')
+    await call.message.answer('Сейчас пришлю файлик! Нужно немного подождать 💌')
     await call.answer()
+    await call.message.answer_document(document=file, reply_markup=get_to_main_menu(),
+                                    caption='Лови! 🙌🏻')
 
 
 @start_router.callback_query(F.data == 'my_order')
@@ -158,5 +117,22 @@ async def show_order(call: CallbackQuery):
 @start_router.callback_query(F.data == 'delete_order')
 async def delete_order(call: CallbackQuery):
     cancel_order(call.from_user.username)
-    await call.message.answer('Заказ удалён! Куда дальше? 👀', reply_markup=get_out_after_cancel())
+    await call.message.answer('Заказ удалён! 🥢', reply_markup=get_out_after_cancel())
     await call.answer()
+
+
+@start_router.callback_query(F.data == 'admin')
+async def admin_only(call: CallbackQuery):
+    data = ex_classes()
+    if data != 'Нет текущих заказов ❌':
+        for i in range(len(data) - 1):
+            if data[i][:3] == data[i + 1][:3]:
+                existing_classes = '\n'.join(data)
+            else:
+                existing_classes = '\n\n'.join(data)
+        await call.message.answer(existing_classes)
+        await call.message.answer('Вот список всех заказавших! 📋', reply_markup=get_to_main_menu())
+        await call.answer()
+    else:
+        await call.message.answer('Нет текущих заказов ❌', reply_markup=get_to_main_menu())
+        await call.answer()
