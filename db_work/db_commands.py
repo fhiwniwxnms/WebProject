@@ -99,8 +99,6 @@ def ex_classes():
         Orders, User.username == Orders.username
     ).join(
         Types, Orders.order_id == Types.id
-    ).filter(
-        Orders.date == date
     ).order_by(
         order_case,
         User.name
@@ -109,6 +107,6 @@ def ex_classes():
         return 'Нет текущих заказов ❌'
     for result in results:
         full_grade = f"{result.grade}{result.liter}"
-        data.append("{:<5} {:<20} \n{:<10}".format(full_grade, result.name, result.order_type))
+        data.append("{:<5}{:<20} \n{:<10}".format(full_grade, result.name, result.order_type))
 
     return data

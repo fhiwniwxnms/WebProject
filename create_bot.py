@@ -4,8 +4,9 @@ from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
-from decouple import config
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+
+from decouple import config
 
 scheduler = AsyncIOScheduler(timezone='Europe/Moscow')
 

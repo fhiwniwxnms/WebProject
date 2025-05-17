@@ -1,5 +1,6 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+
 from decouple import config
 
 admins = [admin_id for admin_id in config('ADMINS').split(',')]

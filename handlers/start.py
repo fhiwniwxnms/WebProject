@@ -130,13 +130,8 @@ async def admin_only(call: CallbackQuery):
     data = ex_classes()
     existing_classes = ''
     if data != 'Нет текущих заказов ❌':
-        for i in range(len(data) - 1):
-            if data[i][:3] == data[i + 1][:3]:
-                existing_classes = '\n'.join(data)
-            else:
-                existing_classes = '\n\n'.join(data)
-        print(existing_classes)
-        # await call.message.answer(existing_classes)
+        existing_classes = '\n\n'.join(data)
+        await call.message.answer(existing_classes)
         await call.message.answer('Вот список всех заказавших! 📋', reply_markup=get_to_main_menu())
         await call.answer()
     else:
