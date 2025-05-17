@@ -128,6 +128,7 @@ async def delete_order(call: CallbackQuery):
 @start_router.callback_query(F.data == 'admin')
 async def admin_only(call: CallbackQuery):
     data = ex_classes()
+    print(data)
     existing_classes = ''
     if data != 'Нет текущих заказов ❌':
         for i in range(len(data) - 1):
