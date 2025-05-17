@@ -17,11 +17,13 @@ eng = create_engine('sqlite:///data/list_of_students.db')
 Session = sessionmaker(bind=eng)
 session = Session()
 
+
 @start_router.message(F.text == '/help')
 async def cmd_help(message: Message):
     await message.answer('💬 <b>Нужна помощь? Мы на связи!</b>\n\n'
                          'Если у тебя возникли вопросы или проблемы, пиши создателю ЛанчБота 👉 @by_gelya',
                          reply_markup=get_to_main_menu())
+
 
 @start_router.message(CommandStart())
 async def cmd_start(message: Message):
@@ -88,13 +90,14 @@ async def make_order(call: CallbackQuery):
     await call.message.answer('Отлично! Куда дальше? 👀', reply_markup=cancel_or_get_to_main_menu())
     await call.answer()
 
+
 @start_router.callback_query(F.data == 'current_menu')
 async def menu_showing(call: CallbackQuery):
-    file = FSInputFile(path='all_media/menu.docx')
+    file = FSInputFile(path='data/menu.docx')
     await call.message.answer('Сейчас пришлю файлик! Нужно немного подождать 💌')
     await call.answer()
     await call.message.answer_document(document=file, reply_markup=get_to_main_menu(),
-                                    caption='Лови! 🙌🏻')
+                                       caption='Лови! 🙌🏻')
 
 
 @start_router.callback_query(F.data == 'my_order')
