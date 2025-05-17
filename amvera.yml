@@ -6,7 +6,7 @@ meta:
 build:
   requirementsPath: requirements.txt
 run:
-  scriptName: app.py
+  scriptName: aiogram_run.py
   command: null
   persistenceMount: /data
   containerPort: "80"

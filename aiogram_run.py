@@ -1,10 +1,9 @@
 import asyncio
 
-import schedule
 from aiogram.types import BotCommand, BotCommandScopeDefault
 from sqlalchemy import create_engine
 
-from data import db_session
+from db_work import db_session
 from create_bot import bot, dp
 from db_work.clear_table import TableCleaner
 from db_work.db_commands import insert_orders_types

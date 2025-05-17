@@ -2,8 +2,8 @@ from datetime import datetime
 
 from sqlalchemy import case
 
-from data import db_session
-from data.create_tables import User, Orders, Types
+from db_work import db_session
+from db_work.create_tables import User, Orders, Types
 from keyboards.inline_kbs import admins
 
 

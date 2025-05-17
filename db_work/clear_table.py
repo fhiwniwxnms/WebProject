@@ -1,4 +1,4 @@
-from data.create_tables import Orders
+from db_work.create_tables import Orders
 
 import schedule
 import time
