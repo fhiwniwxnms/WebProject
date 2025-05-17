@@ -105,7 +105,7 @@ def ex_classes():
         order_case,
         User.name
     ).all())
-    if not data:
+    if not results:
         return 'Нет текущих заказов ❌'
     for result in results:
         full_grade = f"{result.grade}{result.liter}"
